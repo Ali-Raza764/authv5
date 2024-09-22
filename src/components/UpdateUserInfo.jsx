@@ -8,7 +8,7 @@ const UpdateUserInfo = () => {
   const { data: session, update } = useSession();
   const [name, setName] = useState(session?.user?.name || "");
   const [message, setMessage] = useState("");
-  const router = useRouter();
+  // const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,7 +19,7 @@ const UpdateUserInfo = () => {
         name,
       },
     });
-    router.refresh();
+    // router.refresh();
   };
 
   return (
