@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { redirect } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 // Helper function to validate email format
 const validateEmail = (email) => {
@@ -10,37 +10,23 @@ const validateEmail = (email) => {
 };
 
 const SignIn = () => {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    secret: "",
-  });
+  const searchParams = useSearchParams();
+  const error = searchParams.get("error");
+  const message = searchParams.get("code");
 
-  const [errors, setErrors] = useState({});
-  const [confirmationMessage, setConfirmationMessage] = useState("");
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
-    const { email, password, secret } = formData;
-
-    // Reset errors and confirmation message
-    setErrors({});
-    setConfirmationMessage("");
+    const email = e.target.email.value;
+    const password = e.target.password.value;
 
     // Validate email
     if (!validateEmail(email)) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        email: "Invalid email format",
-      }));
+      alert("Invalid email format");
+      setLoading(false);
       return;
     }
 
@@ -51,18 +37,12 @@ const SignIn = () => {
         email,
         password,
       });
-      if (res.ok) {
-        redirect("/");
-      }
-
-      // Reset form after successful registration
-      setFormData({ email: "", password: "", secret: "" });
+      console.log(res);
     } catch (error) {
-      // setErrors((prevErrors) => ({
-      //   ...prevErrors,
-      //   general: "An error occurred during registration.",
-      // }));
+      console.error("Sign-in failed", error);
     }
+
+    setLoading(false);
   };
 
   return (
@@ -81,17 +61,10 @@ const SignIn = () => {
               type="email"
               id="email"
               name="email"
-              value={formData.email}
-              onChange={handleChange}
               required
-              className={`w-full px-4 py-2 mt-2 text-white bg-gray-700 border ${
-                errors.email ? "border-red-600" : "border-gray-600"
-              } rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none transition duration-300`}
+              className="w-full px-4 py-2 mt-2 text-white bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none transition duration-300"
               placeholder="Enter your email"
             />
-            {errors.email && (
-              <p className="text-red-500 text-sm mt-2">{errors.email}</p>
-            )}
           </div>
 
           {/* Password Field */}
@@ -103,53 +76,30 @@ const SignIn = () => {
               type="password"
               id="password"
               name="password"
-              value={formData.password}
-              onChange={handleChange}
               required
               className="w-full px-4 py-2 mt-2 text-white bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none transition duration-300"
               placeholder="Enter your password"
             />
           </div>
 
-          {/* Secret Field */}
-          <div>
-            <label htmlFor="secret" className="block text-sm text-gray-400">
-              Secret
-            </label>
-            <input
-              type="text"
-              id="secret"
-              name="secret"
-              value={formData.secret}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 mt-2 text-white bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none transition duration-300"
-              placeholder="Enter the secret"
-            />
-          </div>
-
           {/* General Errors */}
-          {errors.general && (
-            <p className="text-red-500 text-sm text-center">{errors.general}</p>
+          {error && (
+            <p className="text-red-500 text-sm text-center">{message}</p>
           )}
 
           {/* Submit Button */}
           <div>
             <button
               type="submit"
-              className="w-full px-4 py-2 text-lg font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-500 transition duration-300"
+              disabled={loading}
+              className={`w-full px-4 py-2 text-lg font-medium text-white bg-indigo-600 rounded-md transition duration-300 ${
+                loading ? "opacity-50 cursor-not-allowed" : "hover:bg-indigo-500"
+              }`}
             >
-              Sign In
+              {loading ? "Signing In..." : "Sign In"}
             </button>
           </div>
         </form>
-
-        {/* Confirmation Message */}
-        {confirmationMessage && (
-          <p className="text-green-500 text-sm text-center mt-6">
-            {confirmationMessage}
-          </p>
-        )}
       </div>
     </div>
   );

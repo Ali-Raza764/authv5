@@ -1,6 +1,11 @@
 import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
+class InvalidLoginError extends CredentialsSignin {
+  code = "Invalid identifier or password"
+  message = "Invalid identifier or password"
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
@@ -10,6 +15,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       async authorize(credentials) {
         // Add database logic here to cofirm the password
+        // throw new InvalidLoginError(); //testing to throw an error if one occurs like invalid password etc
         return {
           name: "Ali Raza Khalid",
           email: "alikillerno@gmail.com",
